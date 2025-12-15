@@ -127,7 +127,7 @@ const HomelabShowcase = () => {
                                         <div className="flex items-center gap-3 mb-2">
                                             <Network className="w-7 h-7 text-green-400" />
                                             <div>
-                                                <p className="text-xs font-mono text-slate-400">1C-61-B4-2C-1B-E3</p>
+                                                <p className="text-xs font-mono text-slate-400">Gateway</p>
                                                 <h3 className="text-lg font-bold">ER605</h3>
                                                 <p className="text-xs text-slate-400">WAN1</p>
                                             </div>
