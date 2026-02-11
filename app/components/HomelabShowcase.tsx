@@ -17,16 +17,16 @@ const HomelabShowcase = () => {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+        <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black text-white">
             {/* Hero Section */}
             <div className="relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10" />
+                <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 to-rose-600/10" />
                 <div className="relative max-w-7xl mx-auto px-6 py-20">
                     <div className="flex items-center gap-3 mb-6">
-                        <Server className="w-8 h-8 text-blue-400" />
-                        <span className="text-blue-400 font-mono text-sm tracking-wider">INFRASTRUCTURE LAB</span>
+                        <Server className="w-8 h-8 text-red-400" />
+                        <span className="text-red-400 font-mono text-sm tracking-wider">INFRASTRUCTURE LAB</span>
                     </div>
-                    <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-red-400 via-rose-400 to-pink-400 bg-clip-text text-transparent">
                         Production-Grade Homelab
                     </h1>
                     <p className="text-2xl text-slate-300 mb-8 max-w-3xl">
@@ -36,13 +36,13 @@ const HomelabShowcase = () => {
                     <div className="flex gap-4">
                         <button
                             onClick={() => setActiveTab('architecture')}
-                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all flex items-center gap-2"
+                            className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-all flex items-center gap-2"
                         >
                             Explore Architecture <ChevronRight className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => setActiveTab('capabilities')}
-                            className="px-6 py-3 border border-slate-600 hover:border-slate-400 rounded-lg font-semibold transition-all"
+                            className="px-6 py-3 border border-red-600 hover:border-red-400 rounded-lg font-semibold transition-all"
                         >
                             Key Capabilities
                         </button>
@@ -58,12 +58,12 @@ const HomelabShowcase = () => {
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`py-4 px-2 font-semibold capitalize transition-all relative ${activeTab === tab ? 'text-blue-400' : 'text-slate-500 hover:text-slate-300'
+                                className={`py-4 px-2 font-semibold capitalize transition-all relative ${activeTab === tab ? 'text-red-400' : 'text-slate-500 hover:text-slate-300'
                                     }`}
                             >
                                 {tab}
                                 {activeTab === tab && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400" />
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-400" />
                                 )}
                             </button>
                         ))}
@@ -88,7 +88,7 @@ const HomelabShowcase = () => {
 
                         <div className="relative bg-slate-900/50 border border-slate-700 rounded-xl p-6 md:p-8 overflow-x-auto">
                             <div className="min-w-[900px] md:min-w-[1100px] relative" style={{ minHeight: '720px' }}>
-                                
+
                                 {/* Internet / Starlink */}
                                 <div className="absolute top-0 left-[40px]" style={{ zIndex: 1 }}>
                                     <div className="bg-gradient-to-br from-blue-600/30 to-cyan-600/30 border-2 border-blue-500 rounded-xl p-4 shadow-lg shadow-blue-500/20">
@@ -117,12 +117,11 @@ const HomelabShowcase = () => {
 
                                 {/* ER605 Router */}
                                 <div className="absolute top-[140px] left-[40px]" style={{ zIndex: 1 }}>
-                                    <div 
+                                    <div
                                         onMouseEnter={() => setHoveredService(605)}
                                         onMouseLeave={() => setHoveredService(null)}
-                                        className={`bg-gradient-to-br from-slate-700/90 to-slate-800/90 border-2 rounded-xl p-4 shadow-xl cursor-pointer transition-all transform hover:scale-105 ${
-                                            hoveredService === 605 ? 'border-green-500 ring-2 ring-green-500/30 shadow-green-500/20' : 'border-slate-600'
-                                        }`}
+                                        className={`bg-gradient-to-br from-slate-700/90 to-slate-800/90 border-2 rounded-xl p-4 shadow-xl cursor-pointer transition-all transform hover:scale-105 ${hoveredService === 605 ? 'border-green-500 ring-2 ring-green-500/30 shadow-green-500/20' : 'border-slate-600'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-3 mb-2">
                                             <Network className="w-7 h-7 text-green-400" />
@@ -150,12 +149,11 @@ const HomelabShowcase = () => {
 
                                 {/* Cerebro SG3428 Switch - Central Hub */}
                                 <div className="absolute top-[120px] left-[380px]" style={{ zIndex: 1 }}>
-                                    <div 
+                                    <div
                                         onMouseEnter={() => setHoveredService(3428)}
                                         onMouseLeave={() => setHoveredService(null)}
-                                        className={`bg-gradient-to-br from-emerald-900/50 to-teal-900/50 border-2 rounded-xl p-5 shadow-xl cursor-pointer transition-all transform hover:scale-105 ${
-                                            hoveredService === 3428 ? 'border-green-400 ring-2 ring-green-400/30 shadow-green-500/30' : 'border-green-600'
-                                        }`}
+                                        className={`bg-gradient-to-br from-emerald-900/50 to-teal-900/50 border-2 rounded-xl p-5 shadow-xl cursor-pointer transition-all transform hover:scale-105 ${hoveredService === 3428 ? 'border-green-400 ring-2 ring-green-400/30 shadow-green-500/30' : 'border-green-600'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-3 mb-3">
                                             <Boxes className="w-8 h-8 text-green-400" />
@@ -170,7 +168,7 @@ const HomelabShowcase = () => {
                                             <div>→ Port #24: Antenitas</div>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Connection: Cerebro → Omada Controller (Top Right) */}
                                     <div className="absolute left-full top-[20px] flex items-center">
                                         <svg width="200" height="80" className="overflow-visible">
@@ -192,7 +190,7 @@ const HomelabShowcase = () => {
                                             <text x="80" y="15" fill="#22c55e" fontSize="10" fontFamily="monospace">1000FDX</text>
                                         </svg>
                                     </div>
-                                    
+
                                     {/* Connection: Cerebro → Antenitas (Right) */}
                                     <div className="absolute left-full top-[90px] flex items-center">
                                         <svg width="200" height="120" className="overflow-visible">
@@ -214,7 +212,7 @@ const HomelabShowcase = () => {
                                             <text x="70" y="80" fill="#22c55e" fontSize="10" fontFamily="monospace">Port #24</text>
                                         </svg>
                                     </div>
-                                    
+
                                     {/* Connection: Cerebro → Client Group 7 (Down) */}
                                     <div className="absolute left-1/2 top-full -translate-x-1/2 flex flex-col items-center">
                                         <svg width="40" height="140" className="overflow-visible">
@@ -233,12 +231,11 @@ const HomelabShowcase = () => {
 
                                 {/* Omada Controller */}
                                 <div className="absolute top-[80px] right-[80px]" style={{ zIndex: 1 }}>
-                                    <div 
+                                    <div
                                         onMouseEnter={() => setHoveredService(101)}
                                         onMouseLeave={() => setHoveredService(null)}
-                                        className={`bg-gradient-to-br from-purple-600/30 to-purple-800/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${
-                                            hoveredService === 101 ? 'border-purple-400 ring-2 ring-purple-400/30 shadow-purple-500/30' : 'border-purple-600'
-                                        }`}
+                                        className={`bg-gradient-to-br from-purple-600/30 to-purple-800/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${hoveredService === 101 ? 'border-purple-400 ring-2 ring-purple-400/30 shadow-purple-500/30' : 'border-purple-600'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-2 mb-2">
                                             <Monitor className="w-6 h-6 text-purple-400" />
@@ -254,12 +251,11 @@ const HomelabShowcase = () => {
 
                                 {/* Antenitas EAP225-Outdoor */}
                                 <div className="absolute top-[280px] right-[60px]" style={{ zIndex: 1 }}>
-                                    <div 
+                                    <div
                                         onMouseEnter={() => setHoveredService(225)}
                                         onMouseLeave={() => setHoveredService(null)}
-                                        className={`bg-gradient-to-br from-amber-600/30 to-orange-700/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${
-                                            hoveredService === 225 ? 'border-amber-400 ring-2 ring-amber-400/30 shadow-amber-500/30' : 'border-amber-600'
-                                        }`}
+                                        className={`bg-gradient-to-br from-amber-600/30 to-orange-700/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${hoveredService === 225 ? 'border-amber-400 ring-2 ring-amber-400/30 shadow-amber-500/30' : 'border-amber-600'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-2 mb-2">
                                             <Radio className="w-6 h-6 text-amber-400" />
@@ -273,7 +269,7 @@ const HomelabShowcase = () => {
                                             <div className="text-amber-400/70">📶 6(b/g/n), 36(a/n/ac)</div>
                                         </div>
                                     </div>
-                                    
+
                                     {/* WiFi Connections from Antenitas */}
                                     <div className="absolute left-1/2 top-full -translate-x-1/2 flex flex-col items-center">
                                         <svg width="180" height="200" className="overflow-visible" style={{ marginLeft: '-40px' }}>
@@ -287,7 +283,7 @@ const HomelabShowcase = () => {
                                                 </animateMotion>
                                             </circle>
                                             <path id="pathWifi1" d="M 90 0 Q 60 80 40 120" fill="none" />
-                                            
+
                                             {/* WiFi → Camera Group 4 */}
                                             <path d="M 90 0 Q 120 100 100 180" stroke="#fbbf24" strokeWidth="2" fill="none" strokeDasharray="4,4">
                                                 <animate attributeName="stroke-dashoffset" values="0;-16" dur="0.8s" repeatCount="indefinite" />
@@ -304,12 +300,11 @@ const HomelabShowcase = () => {
 
                                 {/* Client Group 7 - Direct from Cerebro */}
                                 <div className="absolute top-[420px] left-[380px]" style={{ zIndex: 1 }}>
-                                    <div 
+                                    <div
                                         onMouseEnter={() => setHoveredService(7)}
                                         onMouseLeave={() => setHoveredService(null)}
-                                        className={`bg-gradient-to-br from-cyan-600/30 to-blue-700/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${
-                                            hoveredService === 7 ? 'border-cyan-400 ring-2 ring-cyan-400/30 shadow-cyan-500/30' : 'border-cyan-600'
-                                        }`}
+                                        className={`bg-gradient-to-br from-cyan-600/30 to-blue-700/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${hoveredService === 7 ? 'border-cyan-400 ring-2 ring-cyan-400/30 shadow-cyan-500/30' : 'border-cyan-600'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="flex gap-1">
@@ -331,12 +326,11 @@ const HomelabShowcase = () => {
 
                                 {/* Client Group 6 - WiFi from Antenitas */}
                                 <div className="absolute top-[480px] right-[140px]" style={{ zIndex: 1 }}>
-                                    <div 
+                                    <div
                                         onMouseEnter={() => setHoveredService(6)}
                                         onMouseLeave={() => setHoveredService(null)}
-                                        className={`bg-gradient-to-br from-cyan-600/30 to-blue-700/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${
-                                            hoveredService === 6 ? 'border-cyan-400 ring-2 ring-cyan-400/30 shadow-cyan-500/30' : 'border-cyan-600'
-                                        }`}
+                                        className={`bg-gradient-to-br from-cyan-600/30 to-blue-700/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${hoveredService === 6 ? 'border-cyan-400 ring-2 ring-cyan-400/30 shadow-cyan-500/30' : 'border-cyan-600'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="flex gap-1">
@@ -358,12 +352,11 @@ const HomelabShowcase = () => {
 
                                 {/* Camera Group 4 - WiFi from Antenitas */}
                                 <div className="absolute top-[580px] right-[100px]" style={{ zIndex: 1 }}>
-                                    <div 
+                                    <div
                                         onMouseEnter={() => setHoveredService(4)}
                                         onMouseLeave={() => setHoveredService(null)}
-                                        className={`bg-gradient-to-br from-red-600/30 to-rose-800/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${
-                                            hoveredService === 4 ? 'border-red-400 ring-2 ring-red-400/30 shadow-red-500/30' : 'border-red-600'
-                                        }`}
+                                        className={`bg-gradient-to-br from-red-600/30 to-rose-800/30 border-2 rounded-xl p-4 shadow-lg cursor-pointer transition-all transform hover:scale-105 ${hoveredService === 4 ? 'border-red-400 ring-2 ring-red-400/30 shadow-red-500/30' : 'border-red-600'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-2 mb-2">
                                             <Camera className="w-6 h-6 text-red-400" />

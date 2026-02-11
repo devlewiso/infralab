@@ -14,7 +14,7 @@ const Architecture = ({ onServiceSelect }: ArchitectureProps) => {
     return (
         <div>
             <h2 className="text-3xl font-bold mb-8">Layered Boot Architecture</h2>
-            <div className="mb-8 bg-slate-800/30 border border-slate-700 rounded-lg p-6">
+            <div className="mb-8 bg-red-950/30 border border-red-900 rounded-lg p-6">
                 <p className="text-slate-300 text-lg">
                     The infrastructure follows a strict boot orchestration pattern where each layer depends on the previous one.
                     This ensures proper service initialization, dependency resolution, and graceful failure handling.
@@ -25,7 +25,7 @@ const Architecture = ({ onServiceSelect }: ArchitectureProps) => {
                 {layers.map((layer) => (
                     <div
                         key={layer.id}
-                        className={`bg-slate-800/50 backdrop-blur border rounded-xl overflow-hidden transition-all cursor-pointer ${selectedLayer === layer.id ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-700 hover:border-slate-600'
+                        className={`bg-red-950/50 backdrop-blur border rounded-xl overflow-hidden transition-all cursor-pointer ${selectedLayer === layer.id ? 'border-red-500 ring-2 ring-red-500/20' : 'border-red-900 hover:border-red-800'
                             }`}
                         onClick={() => setSelectedLayer(selectedLayer === layer.id ? null : layer.id)}
                     >
@@ -51,14 +51,14 @@ const Architecture = ({ onServiceSelect }: ArchitectureProps) => {
                                             e.stopPropagation();
                                             onServiceSelect(service);
                                         }}
-                                        className="bg-slate-900/50 border border-slate-700 rounded-lg p-4 hover:border-blue-500/50 transition-all cursor-pointer"
+                                        className="bg-black/50 border border-red-900 rounded-lg p-4 hover:border-red-500/50 transition-all cursor-pointer"
                                     >
                                         <div className="flex items-center justify-between">
                                             <div>
                                                 <div className="flex items-center gap-3">
                                                     <span className="font-mono text-sm text-slate-500">CT {service.id}</span>
                                                     <h4 className="font-semibold text-lg">{service.name}</h4>
-                                                    <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs font-semibold">
+                                                    <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-semibold">
                                                         {service.status}
                                                     </span>
                                                 </div>
