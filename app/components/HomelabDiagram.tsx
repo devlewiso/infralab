@@ -1,5 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Server, Cloud, Laptop, Database, Activity, Shield, Eye, Zap, Container, HardDrive, Video, Home, Box, GitBranch, Layers, Terminal, Skull, Lock, Cpu, MemoryStick, Gauge, LucideIcon } from 'lucide-react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import {
+    Server,
+    Cloud,
+    Laptop,
+    Database,
+    Activity,
+    Shield,
+    Eye,
+    Zap,
+    Container,
+    HardDrive,
+    Video,
+    Home,
+    Box,
+    GitBranch,
+    Layers,
+    Terminal,
+    Lock,
+    Cpu,
+    MemoryStick,
+    LucideIcon,
+} from 'lucide-react';
 
 interface CPUDataPoint {
     time: number;
@@ -10,606 +33,695 @@ interface CPUDataPoint {
 interface ServiceType {
     name: string;
     icon: LucideIcon;
-    type: string;
+    type: 'docker' | 'database';
 }
 
-interface NodeData {
+interface ContainerNode {
+    id: string;
     name: string;
-    status?: string;
-    services?: ServiceType[];
-    icon?: LucideIcon;
-    type?: string;
+    status: 'running' | 'stopped';
+    services: ServiceType[];
+    section: string;
+    sectionIcon: LucideIcon;
+}
+
+interface SimpleNodeData {
+    id: string;
+    name: string;
+    status?: 'running' | 'stopped';
+    icon: LucideIcon;
     description?: string;
 }
+
+interface StorageNodeData {
+    id: string;
+    name: string;
+    type: string;
+    icon: LucideIcon;
+}
+
+interface CloudNodeData {
+    id: string;
+    name: string;
+    icon: LucideIcon;
+}
+
+const cloudNodes: CloudNodeData[] = [
+    { id: 'github', name: 'GitHub Repos', icon: GitBranch },
+    { id: 'netlify', name: 'Netlify Hosting', icon: Cloud },
+    { id: 'laptop', name: 'Laptop / Code Editor', icon: Laptop },
+];
+
+const containers: ContainerNode[] = [
+    {
+        id: 'lxc102',
+        name: 'LXC 102: twingate-connector53',
+        status: 'running',
+        section: 'ZERO-TRUST ACCESS',
+        sectionIcon: Lock,
+        services: [
+            { name: 'Twingate Connector', icon: Shield, type: 'docker' },
+            { name: 'Zero Trust Network', icon: Lock, type: 'docker' },
+        ],
+    },
+    {
+        id: 'lxc103',
+        name: 'LXC 103: srv-kong-gateway',
+        status: 'running',
+        section: 'GATEWAY & PROXY',
+        sectionIcon: Shield,
+        services: [
+            { name: 'Kong API Gateway', icon: Shield, type: 'docker' },
+            { name: 'Konga Manager', icon: Layers, type: 'docker' },
+            { name: 'Portainer Agent :9001', icon: Container, type: 'docker' },
+            { name: 'Postgres 13', icon: Database, type: 'database' },
+        ],
+    },
+    {
+        id: 'lxc120',
+        name: 'LXC 120: Monitoring30',
+        status: 'running',
+        section: 'MONITORING & OPS',
+        sectionIcon: Activity,
+        services: [
+            { name: 'n8n Automations', icon: Zap, type: 'docker' },
+            { name: 'Cloudflare Tunnel', icon: Shield, type: 'docker' },
+            { name: 'Grafana 12.3.2', icon: Activity, type: 'docker' },
+            { name: 'Prometheus', icon: Activity, type: 'docker' },
+            { name: 'Promtail Agent', icon: Activity, type: 'docker' },
+            { name: 'Uptime Kuma', icon: Eye, type: 'docker' },
+            { name: 'Dozzle Logs', icon: Activity, type: 'docker' },
+            { name: 'Postgres 16', icon: Database, type: 'database' },
+        ],
+    },
+    {
+        id: 'lxc105',
+        name: 'LXC 105: DataBaseandBI',
+        status: 'running',
+        section: 'DATA & BI',
+        sectionIcon: Database,
+        services: [
+            { name: 'Metabase', icon: Activity, type: 'docker' },
+            { name: 'Postgres Main', icon: Database, type: 'database' },
+        ],
+    },
+    {
+        id: 'lxc110',
+        name: 'LXC 110: srv-chatwoot-10',
+        status: 'running',
+        section: 'CUSTOMER SUPPORT',
+        sectionIcon: Activity,
+        services: [
+            { name: 'Chatwoot', icon: Activity, type: 'docker' },
+            { name: 'Redis', icon: Database, type: 'database' },
+            { name: 'Postgres', icon: Database, type: 'database' },
+        ],
+    },
+    {
+        id: 'lxc132',
+        name: 'LXC 132: srv-loki-32',
+        status: 'running',
+        section: 'CENTRAL LOGS',
+        sectionIcon: Activity,
+        services: [{ name: 'Grafana Loki :3100', icon: Activity, type: 'docker' }],
+    },
+    {
+        id: 'lxc167',
+        name: 'LXC 167: srv-openproject-67',
+        status: 'running',
+        section: 'PROJECT MANAGEMENT',
+        sectionIcon: Box,
+        services: [
+            { name: 'OpenProject', icon: Box, type: 'docker' },
+            { name: 'Postgres', icon: Database, type: 'database' },
+        ],
+    },
+    {
+        id: 'lxc300',
+        name: 'LXC 300: dev-gitlab66',
+        status: 'running',
+        section: 'VERSION CONTROL & CI/CD',
+        sectionIcon: GitBranch,
+        services: [
+            { name: 'GitLab CE', icon: GitBranch, type: 'docker' },
+            { name: 'GitLab Runner', icon: Terminal, type: 'docker' },
+            { name: 'Redis Cache', icon: Database, type: 'database' },
+        ],
+    },
+];
+
+const vms: SimpleNodeData[] = [
+    { id: 'vm100', name: 'VM 100: CasaOSMedia105', status: 'running', icon: Server },
+    { id: 'vm200', name: 'VM 200: homeassistant119', status: 'running', icon: Home },
+    { id: 'vm210', name: 'VM 210: Win', status: 'running', icon: Server },
+    { id: 'vm243', name: 'VM 243: ollamaServer', status: 'running', icon: Terminal },
+];
+
+const storages: StorageNodeData[] = [
+    { id: 'localnetwork', name: 'localnetwork (nosotros)', type: 'network', icon: HardDrive },
+    { id: 'entretenimiento', name: 'entretenimiento (nosotros)', type: 'storage', icon: HardDrive },
+    { id: 'local', name: 'local (nosotros)', type: 'storage', icon: HardDrive },
+    { id: 'ssd', name: 'ssd (nosotros)', type: 'storage', icon: HardDrive },
+];
+
+const others: SimpleNodeData[] = [
+    {
+        id: 'lxc101',
+        name: 'LXC 101: Omada Controller',
+        status: 'running',
+        icon: Activity,
+        description: 'Network Infrastructure',
+    },
+    {
+        id: 'lxc104',
+        name: 'LXC 104: Recording NVR',
+        status: 'running',
+        icon: Video,
+        description: 'Video Surveillance',
+    },
+];
+
+const proxmoxStats = {
+    hostname: 'nosotros',
+    uptime: '19:39:33',
+    cpuPct: 2.0,
+    cpuModel: 'AMD Ryzen 7 5700G · 16 cores · 1 socket',
+    loadAverage: '0.40 / 0.97 / 1.10',
+    ramPct: 58.82,
+    ramUsed: '13.39 GiB',
+    ramTotal: '22.77 GiB',
+    hdPct: 13.85,
+    hdUsed: '31.21 GiB',
+    hdTotal: '225.31 GiB',
+    swapPct: 10.57,
+    swapUsed: '865.84 MiB',
+    swapTotal: '8.00 GiB',
+    kernelVersion: '6.17.9-1-pve (2026-01-12)',
+    bootMode: 'EFI',
+    managerVersion: 'pve-manager/9.1.5',
+    ioDelay: '0.00%',
+    ksmSharing: '0 B',
+};
 
 const HomelabDiagram = () => {
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
     const [selectedNode, setSelectedNode] = useState<string | null>(null);
     const [cpuData, setCpuData] = useState<CPUDataPoint[]>([]);
 
-    // Simulate CPU usage data like in Proxmox
     useEffect(() => {
-        const generateCPUData = () => {
-            const points = 50;
-            return Array.from({ length: points }, (_, i) => ({
+        const seed = () =>
+            Array.from({ length: 50 }, (_, i) => ({
                 time: i,
-                cpu: 1.5 + Math.random() * 1.5, // Random between 1.5 and 3
-                io: Math.random() * 0.5 // Low IO delay
+                cpu: 1.5 + Math.random() * 1.5,
+                io: Math.random() * 0.5,
             }));
-        };
-        setCpuData(generateCPUData());
-
-        const interval = setInterval(() => {
-            setCpuData(prev => {
-                const newData = [...prev.slice(1)];
-                newData.push({
+        setCpuData(seed());
+        const id = setInterval(() => {
+            setCpuData((prev) => {
+                const next = [...prev.slice(1)];
+                next.push({
                     time: prev[prev.length - 1].time + 1,
                     cpu: 1.5 + Math.random() * 1.5,
-                    io: Math.random() * 0.5
+                    io: Math.random() * 0.5,
                 });
-                return newData;
+                return next;
             });
         }, 2000);
-
-        return () => clearInterval(interval);
+        return () => clearInterval(id);
     }, []);
 
-    const proxmoxStats = {
-        hostname: 'nosotros',
-        uptime: '19:39:33',
-        cpuUsage: '2.00% of 16 CPU(s)',
-        cpuModel: '16 x AMD Ryzen 7 5700G with Radeon Graphics (1 Socket)',
-        loadAverage: '0.40,0.97,1.10',
-        ramUsage: '58.82% (13.39 GiB of 22.77 GiB)',
-        ramUsed: '13.39 GiB',
-        ramTotal: '22.77 GiB',
-        hdSpace: '13.85% (31.21 GiB of 225.31 GiB)',
-        hdUsed: '31.21 GiB',
-        hdTotal: '225.31 GiB',
-        swapUsage: '10.57% (865.84 MiB of 8.00 GiB)',
-        kernelVersion: 'Linux 6.17.9-1-pve (2026-01-12T16:25Z)',
-        bootMode: 'EFI',
-        managerVersion: 'pve-manager/9.1.5/80fc2a64bef6889',
-        ioDelay: '0.00%',
-        ksmSharing: '0 B'
-    };
-
-    const nodes = {
-        cloud: {
-            github: { name: 'GitHub Repos', icon: GitBranch, type: 'cloud' },
-            netlify: { name: 'Netlify Hosting', icon: Cloud, type: 'cloud' },
-            laptop: { name: 'Laptop / Code Editor', icon: Laptop, type: 'cloud' }
-        },
-        lxc102: {
-            name: 'LXC 102: twingate-connector53',
-            status: 'running',
-            services: [
-                { name: 'Twingate Connector', icon: Shield, type: 'docker' },
-                { name: 'Zero Trust Network', icon: Lock, type: 'docker' }
-            ]
-        },
-        lxc103: {
-            name: 'LXC 103: srv-kong-gateway',
-            status: 'running',
-            services: [
-                { name: 'Kong API Gateway', icon: Shield, type: 'docker' },
-                { name: 'Konga Manager', icon: Layers, type: 'docker' },
-                { name: 'Portainer Agent :9001', icon: Container, type: 'docker' },
-                { name: 'Postgres 13', icon: Database, type: 'database' }
-            ]
-        },
-        lxc120: {
-            name: 'LXC 120: Monitoring30',
-            status: 'running',
-            services: [
-                { name: 'n8n Automations', icon: Zap, type: 'docker' },
-                { name: 'Cloudflare Tunnel', icon: Shield, type: 'docker' },
-                { name: 'Grafana 12.3.2', icon: Activity, type: 'docker' },
-                { name: 'Prometheus', icon: Activity, type: 'docker' },
-                { name: 'Promtail Agent', icon: Activity, type: 'docker' },
-                { name: 'Uptime Kuma', icon: Eye, type: 'docker' },
-                { name: 'Dozzle Logs', icon: Activity, type: 'docker' },
-                { name: 'Postgres 16', icon: Database, type: 'database' }
-            ]
-        },
-        lxc105: {
-            name: 'LXC 105: DataBaseandBI',
-            status: 'running',
-            services: [
-                { name: 'Metabase', icon: Activity, type: 'docker' },
-                { name: 'Postgres Main', icon: Database, type: 'database' }
-            ]
-        },
-        lxc110: {
-            name: 'LXC 110: srv-chatwoot-10',
-            status: 'running',
-            services: [
-                { name: 'Chatwoot', icon: Activity, type: 'docker' },
-                { name: 'Redis', icon: Database, type: 'database' },
-                { name: 'Postgres', icon: Database, type: 'database' }
-            ]
-        },
-        lxc132: {
-            name: 'LXC 132: srv-loki-32',
-            status: 'running',
-            services: [
-                { name: 'Grafana Loki :3100', icon: Activity, type: 'docker' }
-            ]
-        },
-        lxc167: {
-            name: 'LXC 167: srv-openproject-67',
-            status: 'running',
-            services: [
-                { name: 'OpenProject', icon: Box, type: 'docker' },
-                { name: 'Postgres', icon: Database, type: 'database' }
-            ]
-        },
-        lxc300: {
-            name: 'LXC 300: dev-gitlab66',
-            status: 'running',
-            services: [
-                { name: 'GitLab CE', icon: GitBranch, type: 'docker' },
-                { name: 'GitLab Runner', icon: Terminal, type: 'docker' },
-                { name: 'Redis Cache', icon: Database, type: 'database' }
-            ]
-        },
-        vms: {
-            vm100: { name: 'VM 100: CasaOSMedia105', status: 'running', icon: Server },
-            vm200: { name: 'VM 200: homeassistant119', status: 'running', icon: Home },
-            vm210: { name: 'VM 210: Win', status: 'running', icon: Server },
-            vm243: { name: 'VM 243: ollamaServer', status: 'running', icon: Terminal }
-        },
-        storage: {
-            localnetwork: { name: 'localnetwork (nosotros)', type: 'network', icon: HardDrive },
-            entretenimiento: { name: 'entretenimiento (nosotros)', type: 'storage', icon: HardDrive },
-            local: { name: 'local (nosotros)', type: 'storage', icon: HardDrive },
-            ssd: { name: 'ssd (nosotros)', type: 'storage', icon: HardDrive }
-        },
-        others: {
-            lxc101: { name: 'LXC 101: Omada Controller', status: 'running', icon: Activity, description: 'Network Infrastructure' },
-            lxc104: { name: 'LXC 104: Recording NVR', status: 'running', icon: Video, description: 'Video Surveillance' }
-        }
-    };
-
-    const ServiceCard = ({ service, containerName }: { service: ServiceType; containerName: string }) => {
-        const Icon = service.icon;
-        const bgColor = service.type === 'database' ? 'bg-red-900' : 'bg-red-700';
-
-        return (
-            <div className={`flex items-center gap-2 p-2 rounded ${bgColor} bg-opacity-90 text-white text-sm hover:bg-opacity-100 transition-all border border-red-500`}>
-                <Icon size={16} />
-                <span>{service.name}</span>
-            </div>
-        );
-    };
-
-    const LXCContainer = ({ id, data }: { id: string; data: NodeData }) => {
-        const isHovered = hoveredNode === id;
-        const isSelected = selectedNode === id;
-
-        return (
-            <div
-                onMouseEnter={() => setHoveredNode(id)}
-                onMouseLeave={() => setHoveredNode(null)}
-                onClick={() => setSelectedNode(isSelected ? null : id)}
-                className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${data.status === 'running'
-                    ? 'bg-gradient-to-br from-red-950 to-black border-red-600'
-                    : 'bg-gray-900 border-gray-700 border-dashed'
-                    } ${isHovered || isSelected ? 'scale-105 shadow-2xl shadow-red-900' : 'shadow-lg shadow-red-950'}`}
-            >
-                <div className="flex items-center gap-2 mb-3 text-white font-bold">
-                    <Server size={20} className="text-red-500" />
-                    <h3 className="text-sm">{data.name}</h3>
-                    <span className={`ml-auto w-2 h-2 rounded-full ${data.status === 'running' ? 'bg-red-500 animate-pulse' : 'bg-gray-600'}`}></span>
+    return (
+        <div className="space-y-14">
+            {/* Header */}
+            <header className="grid grid-cols-12 gap-8 items-end">
+                <div className="col-span-12 md:col-span-8">
+                    <div className="rt-meta mb-4">// NODE MAP · PROXMOX VE</div>
+                    <h2 className="rt-display text-5xl md:text-6xl">
+                        {proxmoxStats.hostname}
+                        <span className="text-[color:var(--red-ink)]">.</span>
+                    </h2>
+                    <div className="rt-mono text-xs text-[color:var(--foreground-mute)] mt-3">
+                        {proxmoxStats.managerVersion} · kernel {proxmoxStats.kernelVersion} · boot {proxmoxStats.bootMode}
+                    </div>
                 </div>
-                <div className="space-y-2">
-                    {data.services && data.services.map((service: ServiceType, idx: number) => (
-                        <ServiceCard key={idx} service={service} containerName={data.name} />
+                <div className="col-span-12 md:col-span-4 rt-mono text-xs md:text-right space-y-1">
+                    <div className="text-[color:var(--foreground-mute)]">UPTIME</div>
+                    <div className="text-[color:var(--red-ink)] text-lg">{proxmoxStats.uptime}</div>
+                    <div className="text-[color:var(--foreground-mute)] mt-2">LOAD-AVG</div>
+                    <div className="text-[color:var(--foreground-dim)]">{proxmoxStats.loadAverage}</div>
+                </div>
+            </header>
+
+            <div className="rt-redline" />
+
+            {/* Telemetry grid */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-px bg-red-900/40 border border-red-900/40">
+                <TelemetryCard
+                    icon={Cpu}
+                    label="CPU"
+                    pct={proxmoxStats.cpuPct}
+                    primary={`${proxmoxStats.cpuPct.toFixed(2)}%`}
+                    secondary="of 16 cores"
+                    meta={proxmoxStats.cpuModel}
+                />
+                <TelemetryCard
+                    icon={MemoryStick}
+                    label="MEMORY"
+                    pct={proxmoxStats.ramPct}
+                    primary={`${proxmoxStats.ramPct.toFixed(2)}%`}
+                    secondary={`${proxmoxStats.ramUsed} / ${proxmoxStats.ramTotal}`}
+                    meta={`swap ${proxmoxStats.swapPct}% · ${proxmoxStats.swapUsed} / ${proxmoxStats.swapTotal}`}
+                />
+                <TelemetryCard
+                    icon={HardDrive}
+                    label="STORAGE"
+                    pct={proxmoxStats.hdPct}
+                    primary={`${proxmoxStats.hdPct.toFixed(2)}%`}
+                    secondary={`${proxmoxStats.hdUsed} / ${proxmoxStats.hdTotal}`}
+                    meta={`io-delay ${proxmoxStats.ioDelay} · ksm ${proxmoxStats.ksmSharing}`}
+                />
+            </section>
+
+            {/* CPU chart */}
+            <section>
+                <SectionTitle index="00" meta="REAL-TIME" label="CPU · IO delay" />
+                <CPUChart data={cpuData} />
+            </section>
+
+            {/* Cloud layer */}
+            <section>
+                <SectionTitle index="01" meta="INGRESS" label="Public web & dev flow" />
+                <div className="rt-panel p-6 flex flex-wrap items-center gap-3">
+                    {cloudNodes.map((c, idx) => (
+                        <React.Fragment key={c.id}>
+                            <CloudChip data={c} />
+                            {idx < cloudNodes.length - 1 && (
+                                <div className="flex items-center gap-1 text-[color:var(--red-ink)]/50 rt-mono text-xs">
+                                    <span className="h-px w-6 bg-[color:var(--red-ink)]/40" />
+                                    →
+                                    <span className="h-px w-6 bg-[color:var(--red-ink)]/40" />
+                                </div>
+                            )}
+                        </React.Fragment>
                     ))}
                 </div>
-            </div>
-        );
-    };
+            </section>
 
-    const SimpleNode = ({ id, data }: { id: string; data: NodeData }) => {
-        const Icon = data.icon!;
-        const isHovered = hoveredNode === id;
-
-        return (
-            <div
-                onMouseEnter={() => setHoveredNode(id)}
-                onMouseLeave={() => setHoveredNode(null)}
-                className={`flex flex-col gap-1 p-3 rounded-lg border-2 transition-all ${data.status === 'running'
-                    ? 'bg-red-950 border-red-600'
-                    : 'bg-gray-900 border-gray-700 border-dashed'
-                    } ${isHovered ? 'scale-105 shadow-xl shadow-red-900' : 'shadow-md'} text-white`}
-            >
-                <div className="flex items-center gap-2">
-                    <Icon size={18} className="text-red-500" />
-                    <span className="text-sm font-semibold">{data.name}</span>
-                </div>
-                {data.description && (
-                    <span className="text-xs text-gray-400 ml-6">{data.description}</span>
-                )}
-            </div>
-        );
-    };
-
-    const StorageNode = ({ id, data }: { id: string; data: NodeData }) => {
-        const Icon = data.icon!;
-        const isHovered = hoveredNode === id;
-
-        return (
-            <div
-                onMouseEnter={() => setHoveredNode(id)}
-                onMouseLeave={() => setHoveredNode(null)}
-                className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all bg-black border-red-800 ${isHovered ? 'scale-105 shadow-xl shadow-red-900' : 'shadow-md'
-                    } text-white`}
-            >
-                <Icon size={18} className="text-red-400" />
-                <span className="text-sm font-semibold">{data.name}</span>
-                <span className="ml-auto text-xs text-red-500">{data.type}</span>
-            </div>
-        );
-    };
-
-    const CPUChart = () => {
-        const maxValue = 3;
-        const height = 150;
-        const width = 1000;
-        const padding = { left: 35, right: 10, top: 10, bottom: 10 };
-        const chartWidth = width - padding.left - padding.right;
-        const chartHeight = height - padding.top - padding.bottom;
-
-        return (
-            <div className="bg-black bg-opacity-70 border-2 border-red-900 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-red-500 font-bold flex items-center gap-2">
-                        <Activity size={20} />
-                        CPU Usage
-                    </h3>
-                    <div className="flex gap-4 text-xs">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-lime-500 rounded"></div>
-                            <span className="text-gray-400">CPU usage</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                            <span className="text-gray-400">IO delay</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="relative w-full">
-                    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="w-full">
-                        {/* Grid lines and Y-axis labels */}
-                        {[0, 0.5, 1, 1.5, 2, 2.5, 3].map((value) => {
-                            const y = padding.top + chartHeight - (value / maxValue) * chartHeight;
-                            return (
-                                <g key={value}>
-                                    <text
-                                        x={padding.left - 5}
-                                        y={y + 4}
-                                        className="text-xs fill-gray-500"
-                                        textAnchor="end"
-                                    >
-                                        {value}
-                                    </text>
-                                    <line
-                                        x1={padding.left}
-                                        y1={y}
-                                        x2={width - padding.right}
-                                        y2={y}
-                                        className="stroke-gray-800"
-                                        strokeWidth="1"
-                                        vectorEffect="non-scaling-stroke"
-                                    />
-                                </g>
-                            );
-                        })}
-
-                        {/* Gradients */}
-                        <defs>
-                            <linearGradient id="cpuGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="#84cc16" stopOpacity="0.9" />
-                                <stop offset="50%" stopColor="#65a30d" stopOpacity="0.7" />
-                                <stop offset="100%" stopColor="#4d7c0f" stopOpacity="0.4" />
-                            </linearGradient>
-                            <linearGradient id="ioGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.7" />
-                                <stop offset="100%" stopColor="#1e40af" stopOpacity="0.3" />
-                            </linearGradient>
-                        </defs>
-
-                        {/* CPU Usage Area */}
-                        <path
-                            d={`M ${padding.left} ${padding.top + chartHeight} ${cpuData.map((d, i) => {
-                                const x = padding.left + (i / (cpuData.length - 1)) * chartWidth;
-                                const y = padding.top + chartHeight - (d.cpu / maxValue) * chartHeight;
-                                return `L ${x} ${y}`;
-                            }).join(' ')} L ${padding.left + chartWidth} ${padding.top + chartHeight} Z`}
-                            fill="url(#cpuGradient)"
-                            vectorEffect="non-scaling-stroke"
+            {/* LXC rack */}
+            <section>
+                <SectionTitle
+                    index="02"
+                    meta={`${containers.length} LXC`}
+                    label="Container rack"
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-px bg-red-900/40 border border-red-900/40">
+                    {containers.map((c) => (
+                        <ContainerCard
+                            key={c.id}
+                            data={c}
+                            hovered={hoveredNode === c.id}
+                            selected={selectedNode === c.id}
+                            onHover={setHoveredNode}
+                            onSelect={setSelectedNode}
                         />
-
-                        {/* IO Delay Area */}
-                        <path
-                            d={`M ${padding.left} ${padding.top + chartHeight} ${cpuData.map((d, i) => {
-                                const x = padding.left + (i / (cpuData.length - 1)) * chartWidth;
-                                const y = padding.top + chartHeight - (d.io / maxValue) * chartHeight;
-                                return `L ${x} ${y}`;
-                            }).join(' ')} L ${padding.left + chartWidth} ${padding.top + chartHeight} Z`}
-                            fill="url(#ioGradient)"
-                            vectorEffect="non-scaling-stroke"
-                        />
-                    </svg>
+                    ))}
                 </div>
-            </div>
-        );
-    };
+            </section>
 
-    const ProxmoxStats = () => {
-        return (
-            <div className="bg-black bg-opacity-70 border-2 border-red-900 rounded-lg p-6 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 className="text-2xl font-bold text-red-500 flex items-center gap-2">
-                            <Server size={28} />
-                            {proxmoxStats.hostname}
-                        </h2>
-                        <p className="text-gray-400 text-sm">(Uptime: {proxmoxStats.uptime})</p>
-                    </div>
-                    <div className="text-right">
-                        <div className="text-xs text-gray-500">{proxmoxStats.managerVersion}</div>
-                        <div className="text-xs text-gray-500">{proxmoxStats.kernelVersion}</div>
-                        <div className="text-xs text-gray-500">Boot Mode: {proxmoxStats.bootMode}</div>
-                    </div>
+            {/* VMs */}
+            <section>
+                <SectionTitle index="03" meta={`${vms.length} VMs`} label="Virtual machines" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-px bg-red-900/40 border border-red-900/40">
+                    {vms.map((vm) => (
+                        <SimpleRow key={vm.id} data={vm} />
+                    ))}
                 </div>
+            </section>
 
-                <div className="grid grid-cols-3 gap-6 mb-6">
-                    {/* CPU Stats */}
-                    <div className="border border-red-900 rounded-lg p-4 bg-red-950 bg-opacity-30">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Cpu size={20} className="text-red-500" />
-                            <h3 className="font-bold text-red-400">CPU Usage</h3>
-                        </div>
-                        <div className="text-2xl font-bold text-white mb-1">{proxmoxStats.cpuUsage}</div>
-                        <div className="text-xs text-gray-400">{proxmoxStats.cpuModel}</div>
-                        <div className="text-xs text-gray-500 mt-2">Load: {proxmoxStats.loadAverage}</div>
-                    </div>
-
-                    {/* RAM Stats */}
-                    <div className="border border-red-900 rounded-lg p-4 bg-red-950 bg-opacity-30">
-                        <div className="flex items-center gap-2 mb-2">
-                            <MemoryStick size={20} className="text-red-500" />
-                            <h3 className="font-bold text-red-400">RAM Usage</h3>
-                        </div>
-                        <div className="text-2xl font-bold text-white mb-1">{proxmoxStats.ramUsage}</div>
-                        <div className="w-full bg-gray-800 rounded-full h-2 mt-2">
-                            <div className="bg-red-600 h-2 rounded-full" style={{ width: '58.82%' }}></div>
-                        </div>
-                        <div className="text-xs text-gray-400 mt-1">
-                            {proxmoxStats.ramUsed} / {proxmoxStats.ramTotal}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-2">
-                            SWAP: {proxmoxStats.swapUsage}
-                        </div>
-                    </div>
-
-                    {/* Storage Stats */}
-                    <div className="border border-red-900 rounded-lg p-4 bg-red-950 bg-opacity-30">
-                        <div className="flex items-center gap-2 mb-2">
-                            <HardDrive size={20} className="text-red-500" />
-                            <h3 className="font-bold text-red-400">HD Space</h3>
-                        </div>
-                        <div className="text-2xl font-bold text-white mb-1">{proxmoxStats.hdSpace}</div>
-                        <div className="w-full bg-gray-800 rounded-full h-2 mt-2">
-                            <div className="bg-red-600 h-2 rounded-full" style={{ width: '13.85%' }}></div>
-                        </div>
-                        <div className="text-xs text-gray-400 mt-1">
-                            {proxmoxStats.hdUsed} / {proxmoxStats.hdTotal}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-2 flex justify-between">
-                            <span>IO delay: {proxmoxStats.ioDelay}</span>
-                            <span>KSM: {proxmoxStats.ksmSharing}</span>
-                        </div>
-                    </div>
+            {/* Storage */}
+            <section>
+                <SectionTitle index="04" meta="ZFS" label="Storage & network" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-px bg-red-900/40 border border-red-900/40">
+                    {storages.map((s) => (
+                        <StorageRow key={s.id} data={s} />
+                    ))}
                 </div>
+            </section>
 
-                <CPUChart />
-            </div>
-        );
-    };
-
-    const CloudNode = ({ data }: { data: NodeData }) => {
-        const Icon = data.icon!;
-
-        return (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 border-2 border-red-400 shadow-lg text-white font-bold hover:scale-105 transition-all">
-                <Icon size={18} />
-                <span className="text-sm">{data.name}</span>
-            </div>
-        );
-    };
-
-    return (
-        <div className="w-full bg-gradient-to-br from-black via-red-950 to-black p-8 rounded-xl overflow-auto">
-            <div className="min-w-[1200px]">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-red-500 mb-2 flex items-center justify-center gap-3">
-                        <Skull size={40} />
-                        Homelab Infrastructure
-                        <Skull size={40} />
-                    </h1>
-                    <p className="text-red-400 font-semibold">PROXMOX VE: nosotros | Red Team Lab</p>
+            {/* Network infra / surveillance */}
+            <section>
+                <SectionTitle index="05" meta="OPS" label="Network infrastructure & surveillance" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-red-900/40 border border-red-900/40">
+                    {others.map((o) => (
+                        <SimpleRow key={o.id} data={o} />
+                    ))}
                 </div>
+            </section>
 
-                {/* Proxmox System Stats */}
-                <ProxmoxStats />
-
-                {/* Cloud Layer */}
-                <div className="mb-8 p-6 rounded-lg bg-black bg-opacity-70 border-2 border-red-600">
-                    <h2 className="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
-                        <Cloud size={24} />
-                        Public Web & Dev Flow
-                    </h2>
-                    <div className="flex justify-around gap-4">
-                        <CloudNode data={nodes.cloud.github} />
-                        <div className="flex items-center">
-                            <div className="w-16 h-0.5 bg-red-600"></div>
-                        </div>
-                        <CloudNode data={nodes.cloud.netlify} />
-                        <div className="flex items-center">
-                            <div className="w-16 h-0.5 bg-red-600"></div>
-                        </div>
-                        <CloudNode data={nodes.cloud.laptop} />
-                    </div>
+            {/* Legend */}
+            <footer className="rt-panel p-5">
+                <div className="rt-meta text-[color:var(--red-ink)] mb-4">// LEGEND</div>
+                <div className="flex flex-wrap gap-x-8 gap-y-3 rt-mono text-xs text-[color:var(--foreground-dim)]">
+                    <LegendItem dot="emerald" label="Running" />
+                    <LegendItem dot="mute" label="Stopped" />
+                    <LegendItem swatch="var(--red-core)" label="Docker service" />
+                    <LegendItem swatch="var(--red-deep)" label="Database" />
+                    <LegendItem icon={HardDrive} label="Storage node" />
                 </div>
-
-                {/* Main Infrastructure - Row 1 */}
-                <div className="grid grid-cols-3 gap-6 mb-6">
-                    {/* Twingate */}
-                    <div className="col-span-1">
-                        <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                            <Lock size={16} />
-                            ZERO TRUST ACCESS
-                        </div>
-                        <LXCContainer id="lxc102" data={nodes.lxc102} />
-                    </div>
-
-                    {/* Gateway */}
-                    <div className="col-span-1">
-                        <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                            <Shield size={16} />
-                            GATEWAY & PROXY
-                        </div>
-                        <LXCContainer id="lxc103" data={nodes.lxc103} />
-                    </div>
-
-                    {/* Monitoring */}
-                    <div className="col-span-1">
-                        <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                            <Activity size={16} />
-                            MONITORING & OPS
-                        </div>
-                        <LXCContainer id="lxc120" data={nodes.lxc120} />
-                    </div>
-                </div>
-
-                {/* Main Infrastructure - Row 2 */}
-                <div className="grid grid-cols-3 gap-6 mb-6">
-                    {/* Data & BI */}
-                    <div className="col-span-1">
-                        <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                            <Database size={16} />
-                            DATA & BI
-                        </div>
-                        <LXCContainer id="lxc105" data={nodes.lxc105} />
-                    </div>
-
-                    {/* Chatwoot */}
-                    <div className="col-span-1">
-                        <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                            <Activity size={16} />
-                            CUSTOMER SUPPORT
-                        </div>
-                        <LXCContainer id="lxc110" data={nodes.lxc110} />
-                    </div>
-
-                    {/* Logs */}
-                    <div className="col-span-1">
-                        <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                            <Activity size={16} />
-                            CENTRAL LOGS
-                        </div>
-                        <LXCContainer id="lxc132" data={nodes.lxc132} />
-                    </div>
-                </div>
-
-                {/* Development & Project Management */}
-                <div className="grid grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                            <Box size={16} />
-                            PROJECT MANAGEMENT
-                        </div>
-                        <LXCContainer id="lxc167" data={nodes.lxc167} />
-                    </div>
-                    <div>
-                        <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                            <GitBranch size={16} />
-                            VERSION CONTROL & CI/CD
-                        </div>
-                        <LXCContainer id="lxc300" data={nodes.lxc300} />
-                    </div>
-                </div>
-
-                {/* Virtual Machines */}
-                <div className="mb-6">
-                    <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                        <Server size={16} />
-                        VIRTUAL MACHINES
-                    </div>
-                    <div className="grid grid-cols-4 gap-4">
-                        {Object.entries(nodes.vms).map(([key, data]) => (
-                            <SimpleNode key={key} id={key} data={data} />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Storage */}
-                <div className="mb-6">
-                    <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                        <HardDrive size={16} />
-                        STORAGE & NETWORK
-                    </div>
-                    <div className="grid grid-cols-4 gap-4">
-                        {Object.entries(nodes.storage).map(([key, data]) => (
-                            <StorageNode key={key} id={key} data={data} />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Network Infrastructure & Surveillance */}
-                <div className="mb-6">
-                    <div className="mb-2 text-red-500 font-bold text-sm flex items-center gap-2">
-                        <Activity size={16} />
-                        NETWORK INFRASTRUCTURE & SURVEILLANCE
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        {Object.entries(nodes.others).map(([key, data]) => (
-                            <SimpleNode key={key} id={key} data={data} />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Legend */}
-                <div className="mt-8 flex justify-center gap-8 text-sm">
-                    <div className="flex items-center gap-2 text-red-500">
-                        <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-                        <span>Running</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-500">
-                        <div className="w-3 h-3 rounded-full bg-gray-600"></div>
-                        <span>Stopped</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-red-400">
-                        <div className="w-3 h-3 rounded bg-red-700"></div>
-                        <span>Docker Service</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-red-600">
-                        <div className="w-3 h-3 rounded bg-red-900"></div>
-                        <span>Database</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-red-500">
-                        <HardDrive size={16} />
-                        <span>Storage</span>
-                    </div>
-                </div>
-            </div>
+            </footer>
         </div>
     );
 };
+
+/* ─────────────────────────────────────────────────────────────
+   PRESENTATIONAL COMPONENTS
+   ───────────────────────────────────────────────────────────── */
+
+const SectionTitle = ({
+    index,
+    meta,
+    label,
+}: {
+    index: string;
+    meta: string;
+    label: string;
+}) => (
+    <div className="flex items-end justify-between mb-4">
+        <div className="flex items-baseline gap-4">
+            <span className="rt-display text-4xl text-[color:var(--foreground-mute)]/40">
+                {index}
+            </span>
+            <h3 className="rt-display text-2xl md:text-3xl text-[color:var(--foreground)]">
+                {label}
+            </h3>
+        </div>
+        <span className="rt-meta text-[color:var(--red-ink)]">// {meta}</span>
+    </div>
+);
+
+const TelemetryCard = ({
+    icon: Icon,
+    label,
+    pct,
+    primary,
+    secondary,
+    meta,
+}: {
+    icon: LucideIcon;
+    label: string;
+    pct: number;
+    primary: string;
+    secondary: string;
+    meta: string;
+}) => (
+    <div className="bg-[color:var(--bg-panel)] p-6">
+        <div className="flex items-center justify-between rt-meta mb-4">
+            <span className="flex items-center gap-2">
+                <Icon className="w-3.5 h-3.5 text-[color:var(--red-ink)]" />
+                {label}
+            </span>
+            <span className="text-[color:var(--foreground-mute)]">{pct.toFixed(1)}%</span>
+        </div>
+        <div className="rt-display text-5xl text-[color:var(--foreground)] leading-none">
+            {primary}
+        </div>
+        <div className="rt-mono text-xs text-[color:var(--foreground-dim)] mt-2">
+            {secondary}
+        </div>
+        {/* bar */}
+        <div className="mt-5 h-1 bg-[color:var(--bg-abyss)] relative overflow-hidden">
+            <div
+                className="h-full bg-[color:var(--red-core)]"
+                style={{ width: `${Math.min(pct, 100)}%` }}
+            />
+            <div
+                className="absolute top-0 left-0 h-full w-px bg-[color:var(--red-ink)] shadow-[0_0_6px_1px_rgba(255,59,59,0.8)]"
+                style={{ left: `${Math.min(pct, 100)}%` }}
+            />
+        </div>
+        <div className="rt-mono text-[10px] text-[color:var(--foreground-mute)] mt-3 truncate">
+            {meta}
+        </div>
+    </div>
+);
+
+const CPUChart = ({ data }: { data: CPUDataPoint[] }) => {
+    const maxValue = 3;
+    const height = 180;
+    const width = 1000;
+    const padding = { left: 40, right: 12, top: 14, bottom: 14 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    if (data.length === 0) return null;
+
+    return (
+        <div className="rt-panel rt-corner-tl p-5">
+            <div className="flex items-center justify-between mb-3 rt-mono text-xs">
+                <span className="rt-meta text-[color:var(--red-ink)]">// live trace</span>
+                <div className="flex gap-4 text-[color:var(--foreground-dim)]">
+                    <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-[color:var(--red-core)]" />
+                        CPU
+                    </span>
+                    <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-amber-500" />
+                        IO delay
+                    </span>
+                </div>
+            </div>
+
+            <svg
+                width="100%"
+                height={height}
+                viewBox={`0 0 ${width} ${height}`}
+                preserveAspectRatio="none"
+                className="w-full"
+            >
+                {[0, 0.5, 1, 1.5, 2, 2.5, 3].map((v) => {
+                    const y = padding.top + chartHeight - (v / maxValue) * chartHeight;
+                    return (
+                        <g key={v}>
+                            <text
+                                x={padding.left - 6}
+                                y={y + 3}
+                                fontSize="9"
+                                fontFamily="monospace"
+                                fill="#8a7e78"
+                                textAnchor="end"
+                            >
+                                {v.toFixed(1)}
+                            </text>
+                            <line
+                                x1={padding.left}
+                                y1={y}
+                                x2={width - padding.right}
+                                y2={y}
+                                stroke="#3b0a0a"
+                                strokeWidth="1"
+                                vectorEffect="non-scaling-stroke"
+                            />
+                        </g>
+                    );
+                })}
+
+                <defs>
+                    <linearGradient id="cpuGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#ff3b3b" stopOpacity="0.9" />
+                        <stop offset="60%" stopColor="#dc2626" stopOpacity="0.5" />
+                        <stop offset="100%" stopColor="#7f1d1d" stopOpacity="0.05" />
+                    </linearGradient>
+                    <linearGradient id="ioGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="#92400e" stopOpacity="0.1" />
+                    </linearGradient>
+                </defs>
+
+                {/* CPU area */}
+                <path
+                    d={`M ${padding.left} ${padding.top + chartHeight} ${data
+                        .map((d, i) => {
+                            const x = padding.left + (i / (data.length - 1)) * chartWidth;
+                            const y = padding.top + chartHeight - (d.cpu / maxValue) * chartHeight;
+                            return `L ${x} ${y}`;
+                        })
+                        .join(' ')} L ${padding.left + chartWidth} ${padding.top + chartHeight} Z`}
+                    fill="url(#cpuGrad)"
+                    vectorEffect="non-scaling-stroke"
+                />
+                {/* CPU stroke */}
+                <path
+                    d={`M ${data
+                        .map((d, i) => {
+                            const x = padding.left + (i / (data.length - 1)) * chartWidth;
+                            const y = padding.top + chartHeight - (d.cpu / maxValue) * chartHeight;
+                            return `${i === 0 ? '' : 'L'} ${x} ${y}`;
+                        })
+                        .join(' ')}`}
+                    fill="none"
+                    stroke="#ff3b3b"
+                    strokeWidth="1.5"
+                    vectorEffect="non-scaling-stroke"
+                />
+                {/* IO area */}
+                <path
+                    d={`M ${padding.left} ${padding.top + chartHeight} ${data
+                        .map((d, i) => {
+                            const x = padding.left + (i / (data.length - 1)) * chartWidth;
+                            const y = padding.top + chartHeight - (d.io / maxValue) * chartHeight;
+                            return `L ${x} ${y}`;
+                        })
+                        .join(' ')} L ${padding.left + chartWidth} ${padding.top + chartHeight} Z`}
+                    fill="url(#ioGrad)"
+                    vectorEffect="non-scaling-stroke"
+                />
+            </svg>
+        </div>
+    );
+};
+
+const CloudChip = ({ data }: { data: CloudNodeData }) => (
+    <div className="inline-flex items-center gap-2 px-3 py-2 border border-red-900/60 bg-[color:var(--bg-abyss)]/60 hover:border-[color:var(--red-ink)] transition-colors">
+        <data.icon className="w-4 h-4 text-[color:var(--red-ink)]" />
+        <span className="rt-mono text-xs text-[color:var(--foreground-dim)]">{data.name}</span>
+    </div>
+);
+
+const ContainerCard = ({
+    data,
+    hovered,
+    selected,
+    onHover,
+    onSelect,
+}: {
+    data: ContainerNode;
+    hovered: boolean;
+    selected: boolean;
+    onHover: (id: string | null) => void;
+    onSelect: (id: string | null) => void;
+}) => {
+    const [, ctId] = data.name.match(/(\d{3})/) ?? [];
+    const title = data.name.replace(/^LXC \d+: /, '');
+    const Section = data.sectionIcon;
+    return (
+        <div
+            onMouseEnter={() => onHover(data.id)}
+            onMouseLeave={() => onHover(null)}
+            onClick={() => onSelect(selected ? null : data.id)}
+            className={`bg-[color:var(--bg-panel)] p-5 cursor-pointer transition-colors ${
+                hovered || selected ? 'bg-[color:var(--bg-elev)]' : ''
+            }`}
+        >
+            {/* Header row */}
+            <div className="flex items-center justify-between rt-meta mb-3">
+                <span className="flex items-center gap-2 text-[color:var(--red-ink)]">
+                    <Section className="w-3 h-3" />
+                    {data.section}
+                </span>
+                <span className="flex items-center gap-1.5">
+                    <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                            data.status === 'running' ? 'bg-emerald-400 rt-pulse-dot' : 'bg-gray-500'
+                        }`}
+                    />
+                    <span
+                        className={
+                            data.status === 'running'
+                                ? 'text-emerald-400'
+                                : 'text-[color:var(--foreground-mute)]'
+                        }
+                    >
+                        {data.status}
+                    </span>
+                </span>
+            </div>
+
+            {/* Title */}
+            <div className="flex items-baseline gap-3 mb-4">
+                <span className="rt-mono text-[11px] text-[color:var(--foreground-mute)]">CT-{ctId}</span>
+                <h4 className="rt-display text-xl leading-tight text-[color:var(--foreground)]">{title}</h4>
+            </div>
+
+            {/* Services list */}
+            <ul className="space-y-1.5">
+                {data.services.map((s, i) => (
+                    <li
+                        key={i}
+                        className="flex items-center justify-between px-2 py-1.5 bg-[color:var(--bg-abyss)]/60 border border-red-900/30"
+                    >
+                        <span className="flex items-center gap-2 rt-mono text-xs text-[color:var(--foreground-dim)]">
+                            <s.icon className="w-3 h-3 text-[color:var(--red-ink)]" />
+                            {s.name}
+                        </span>
+                        <span
+                            className={`rt-mono text-[9px] tracking-[0.18em] uppercase ${
+                                s.type === 'database'
+                                    ? 'text-[color:var(--rose-ink)]'
+                                    : 'text-[color:var(--foreground-mute)]'
+                            }`}
+                        >
+                            {s.type}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+
+const SimpleRow = ({ data }: { data: SimpleNodeData }) => (
+    <div className="bg-[color:var(--bg-panel)] px-4 py-4 flex items-center gap-3 hover:bg-[color:var(--bg-elev)] transition-colors">
+        <div className="w-9 h-9 border border-red-900/50 flex items-center justify-center bg-[color:var(--bg-abyss)]">
+            <data.icon className="w-4 h-4 text-[color:var(--red-ink)]" />
+        </div>
+        <div className="flex-1 min-w-0">
+            <div className="rt-mono text-[11px] text-[color:var(--foreground-mute)] truncate">
+                {data.name}
+            </div>
+            {data.description && (
+                <div className="rt-mono text-[10px] text-[color:var(--foreground-mute)]/70 mt-0.5">
+                    {data.description}
+                </div>
+            )}
+        </div>
+        <span
+            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                data.status === 'running' ? 'bg-emerald-400 rt-pulse-dot' : 'bg-gray-500'
+            }`}
+        />
+    </div>
+);
+
+const StorageRow = ({ data }: { data: StorageNodeData }) => (
+    <div className="bg-[color:var(--bg-panel)] px-4 py-4 flex items-center gap-3 hover:bg-[color:var(--bg-elev)] transition-colors">
+        <data.icon className="w-4 h-4 text-[color:var(--red-ink)] flex-shrink-0" />
+        <span className="rt-mono text-xs text-[color:var(--foreground-dim)] truncate flex-1">
+            {data.name}
+        </span>
+        <span className="rt-mono text-[9px] tracking-[0.18em] uppercase text-[color:var(--foreground-mute)]">
+            {data.type}
+        </span>
+    </div>
+);
+
+const LegendItem = ({
+    dot,
+    swatch,
+    icon: Icon,
+    label,
+}: {
+    dot?: 'emerald' | 'mute';
+    swatch?: string;
+    icon?: LucideIcon;
+    label: string;
+}) => (
+    <span className="flex items-center gap-2">
+        {dot === 'emerald' && <span className="w-2 h-2 rounded-full bg-emerald-400 rt-pulse-dot" />}
+        {dot === 'mute' && <span className="w-2 h-2 rounded-full bg-gray-500" />}
+        {swatch && <span className="w-3 h-3" style={{ background: swatch }} />}
+        {Icon && <Icon className="w-3.5 h-3.5 text-[color:var(--red-ink)]" />}
+        {label}
+    </span>
+);
 
 export default HomelabDiagram;

@@ -1,6 +1,22 @@
-import { Shield, Database, Network, Activity, HardDrive } from 'lucide-react';
+import { Shield, Database, Network, Activity, LucideIcon } from 'lucide-react';
 
-export const layers = [
+export interface Service {
+    id: number;
+    name: string;
+    desc: string;
+    status: string;
+}
+
+export interface Layer {
+    id: string;
+    name: string;
+    color: string;
+    icon: LucideIcon;
+    services: Service[];
+    purpose: string;
+}
+
+export const layers: Layer[] = [
     {
         id: 'capa1',
         name: 'Capa 1: Infra Base',
@@ -50,4 +66,3 @@ export const layers = [
         purpose: 'User-facing services for media consumption, home automation, and physical security monitoring.'
     }
 ];
-
