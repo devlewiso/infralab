@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://infra.neuralcodelab.com/sitemap.xml
+
+# Crawl-delay for polite bots
+Crawl-delay: 1
+
+# Block admin/internal paths
+Disallow: /_next/
+Disallow: /api/
+Disallow: /admin/

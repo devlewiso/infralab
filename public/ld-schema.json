@@ -1,0 +1,18 @@
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "INFRA.LAB",
+  "alternateName": "neuralcodelab homelab infrastructure",
+  "url": "https://infra.neuralcodelab.com",
+  "description": "Production-grade on-premise infrastructure for AI, DevOps, and zero-trust access. Real-world Proxmox homelab documentation and guides.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "neuralcodelab",
+    "url": "https://neuralcodelab.com"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://infra.neuralcodelab.com/search?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
