@@ -10,7 +10,7 @@ import Overview from './Overview';
 import NetworkTopology from './NetworkTopology';
 import { Service } from './data';
 
-const TABS = ['overview', 'map', 'network', 'architecture', 'capabilities', 'insights'] as const;
+const TABS = ['overview', 'map', 'network', 'architecture', 'capabilities', 'insights', 'blog'] as const;
 type Tab = typeof TABS[number];
 
 const HomelabShowcase = () => {
@@ -202,6 +202,21 @@ const HomelabShowcase = () => {
                     {activeTab === 'architecture' && <Architecture onServiceSelect={setSelectedService} />}
                     {activeTab === 'capabilities' && <Capabilities />}
                     {activeTab === 'insights' && <Insights />}
+                    {activeTab === 'blog' && (
+                        <div className="text-center py-16">
+                            <h2 className="text-3xl font-bold mb-4">Technical Blog</h2>
+                            <p className="text-[color:var(--foreground-dim)] mb-8">
+                                Guides and documentation for production-grade homelab infrastructure.
+                            </p>
+                            <a
+                                href="/blog"
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-[color:var(--red-core)] hover:bg-red-700 text-white rt-label transition-colors"
+                            >
+                                View all posts
+                                <ArrowUpRight className="w-4 h-4" />
+                            </a>
+                        </div>
+                    )}
                 </div>
             </main>
 

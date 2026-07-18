@@ -1,36 +1,117 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { ArrowRight, Server, Clock, Calendar, Tag } from 'lucide-react';
+import fs from 'fs';
+import path from 'path';
+import { remark } from 'remark';
+import html from 'remark-html';
 
-interface BlogPostProps {
-  params: Promise<{ slug: string }>;
+interface Post {
+  slug: string;
+  title: string;
+  description: string;
+  date: string;
+  tags: string[];
+  readTime: string;
+  content: string;
 }
 
-// Map of slugs to post metadata (replace with actual CMS/MDX later)
-const POSTS: Record<string, { title: string; description: string; date: string }> = {
-  'proxmox-homelab-setup-2026': {
-    title: 'Proxmox Homelab Setup 2026: Complete Beginner Guide',
-    description: 'Step-by-step guide to setting up a production-grade Proxmox homelab. Hardware recommendations, network configuration, and your first LXC containers.',
-    date: '2026-07-17',
-  },
-  'zero-trust-home-network-twingate': {
-    title: 'Zero Trust Home Network with Twingate: No VPN Required',
-    description: 'How to implement zero-trust architecture for your homelab using Twingate. Secure remote access without traditional VPN complexity.',
-    date: '2026-07-10',
-  },
-  'lxc-vs-vm-proxmox-when-to-use': {
-    title: 'LXC vs VM in Proxmox: When to Use Each (Real Examples)',
-    description: 'Practical comparison of LXC containers vs VMs in Proxmox with real use cases from a production homelab running 13+ services.',
-    date: '2026-07-05',
-  },
-};
+interface Frontmatter {
+  title: string;
+  description: string;
+  date: string;
+  tags: string[];
+  readTime: string;
+}
 
-export async function generateMetadata({ params }: BlogPostProps): Promise<Metadata> {
+function parseFrontmatter(content: string): { frontmatter: Frontmatter; body: string } {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!match) {
+    throw new Error('Invalid frontmatter');
+  }
+  
+  const frontmatterStr = match[1];
+  const body = match[2];
+  
+  const frontmatter: Frontmatter = {
+    title: '',
+    description: '',
+    date: '',
+    tags: [],
+    readTime: '',
+  };
+  
+  frontmatterStr.split('\n').forEach(line => {
+    const [key, ...valueParts] = line.split(':');
+    const value = valueParts.join(':').trim().replace(/^["']|["']$/g, '');
+    
+    if (key === 'title') frontmatter.title = value;
+    else if (key === 'description') frontmatter.description = value;
+    else if (key === 'date') frontmatter.date = value;
+    else if (key === 'readTime') frontmatter.readTime = value;
+    else if (key === 'tags') {
+      const tagsStr = value.replace(/[\[\]]/g, '');
+      frontmatter.tags = tagsStr.split(',').map(t => t.trim().replace(/^["']|["']$/g, ''));
+    }
+  });
+  
+  return { frontmatter, body };
+}
+
+async function getPost(slug: string): Promise<Post | null> {
+  try {
+    const filePath = path.join(process.cwd(), 'content/posts', `${slug}.md`);
+    
+    if (!fs.existsSync(filePath)) {
+      return null;
+    }
+    
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const { frontmatter, body } = parseFrontmatter(fileContent);
+    
+    const processedContent = await remark().use(html).process(body);
+    const contentHtml = processedContent.toString();
+    
+    return {
+      slug,
+      title: frontmatter.title,
+      description: frontmatter.description,
+      date: frontmatter.date,
+      tags: frontmatter.tags,
+      readTime: frontmatter.readTime,
+      content: contentHtml,
+    };
+  } catch (error) {
+    console.error('Error loading post:', error);
+    return null;
+  }
+}
+
+function getAllPosts(): string[] {
+  const postsDir = path.join(process.cwd(), 'content/posts');
+  
+  if (!fs.existsSync(postsDir)) {
+    return [];
+  }
+  
+  const files = fs.readdirSync(postsDir);
+  return files
+    .filter(file => file.endsWith('.md'))
+    .map(file => file.replace('.md', ''));
+}
+
+export async function generateStaticParams() {
+  const posts = getAllPosts();
+  return posts.map(slug => ({ slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const post = POSTS[slug];
+  const post = await getPost(slug);
   
   if (!post) {
     return {
       title: 'Post Not Found | INFRA.LAB',
-      description: 'This blog post does not exist.',
     };
   }
   
@@ -44,75 +125,77 @@ export async function generateMetadata({ params }: BlogPostProps): Promise<Metad
       publishedTime: post.date,
       authors: ['neuralcodelab'],
     },
-    twitter: {
-      card: 'summary_large_image',
-      title: post.title,
-      description: post.description,
-    },
   };
 }
 
-export async function generateStaticParams() {
-  return Object.keys(POSTS).map((slug) => ({
-    slug,
-  }));
-}
-
-export default async function BlogPost({ params }: BlogPostProps) {
+export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = POSTS[slug];
+  const post = await getPost(slug);
   
   if (!post) {
-    return (
-      <div className="min-h-screen bg-[color:var(--bg-abyss)] text-[color:var(--foreground)] flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">404</h1>
-          <p className="text-[color:var(--foreground-dim)]">Post not found</p>
-        </div>
-      </div>
-    );
+    notFound();
   }
   
   return (
-    <article className="min-h-screen bg-[color:var(--bg-abyss)] text-[color:var(--foreground)]">
+    <div className="min-h-screen bg-[color:var(--bg-abyss)] text-[color:var(--foreground)]">
       {/* Header */}
       <header className="border-b border-red-900/40 bg-[color:var(--bg-abyss)]/90 backdrop-blur sticky top-0 z-40">
         <div className="max-w-[1360px] mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="rt-mono text-xs text-[color:var(--red-ink)] hover:underline">
-            ← INFRA.LAB
+          <a href="/blog" className="rt-mono text-xs text-[color:var(--red-ink)] hover:underline">
+            ← Blog
           </a>
-          <time className="rt-mono text-xs text-[color:var(--foreground-dim)]">
-            {new Date(post.date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </time>
+          <a href="/" className="rt-mono text-xs text-[color:var(--red-ink)] hover:underline">
+            INFRA.LAB
+          </a>
         </div>
       </header>
       
       {/* Content */}
-      <div className="max-w-[800px] mx-auto px-6 py-16">
-        <h1 className="rt-display text-4xl md:text-5xl font-bold mb-6">
-          {post.title}
-        </h1>
-        <p className="text-xl text-[color:var(--foreground-dim)] mb-12">
-          {post.description}
-        </p>
-        
-        {/* Placeholder for actual content */}
-        <div className="prose prose-invert prose-red max-w-none">
-          <div className="p-6 border border-red-900/40 bg-red-900/10 rt-mono text-sm">
-            <p className="text-[color:var(--red-ink)] mb-2">// CONTENT PLACEHOLDER</p>
-            <p className="text-[color:var(--foreground-dim)]">
-              This is a template. Actual blog post content goes here.
-            </p>
-            <p className="text-[color:var(--foreground-dim)] mt-4">
-              To create real posts, add MDX support or connect a headless CMS.
-            </p>
+      <article className="max-w-[800px] mx-auto px-6 py-16">
+        {/* Post Header */}
+        <div className="mb-12">
+          <div className="flex items-center gap-3 mb-6 rt-meta">
+            <Server className="w-4 h-4 text-[color:var(--red-ink)]" />
+            <span className="text-[color:var(--red-ink)]">INFRA.LAB</span>
+            <span className="text-[color:var(--foreground-mute)]">// {post.readTime}</span>
+          </div>
+          
+          <h1 className="rt-display text-4xl md:text-5xl font-bold mb-6">
+            {post.title}
+          </h1>
+          
+          <p className="text-xl text-[color:var(--foreground-dim)] mb-8">
+            {post.description}
+          </p>
+          
+          <div className="flex flex-wrap items-center gap-6 rt-mono text-xs text-[color:var(--foreground-mute)]">
+            <span className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5" />
+              {new Date(post.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </span>
+            <div className="flex gap-2">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-2 py-0.5 bg-red-900/20 text-[color:var(--red-ink)] rt-label"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </article>
+        
+        {/* Post Content */}
+        <div 
+          className="prose prose-invert prose-red max-w-none rt-label"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
+      </article>
+    </div>
   );
 }
