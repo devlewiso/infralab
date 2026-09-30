@@ -1,3 +1,5 @@
+export const dynamic = 'force-static'; // requerido por output: 'export'
+
 export default function sitemap() {
   const baseUrl = 'https://infra.neuralcodelab.com';
   
