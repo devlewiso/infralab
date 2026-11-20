@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Server, Clock } from 'lucide-react';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/blog' },
   title: 'Blog',
   description: 'Guides and documentation for production-grade homelab infrastructure. Proxmox, self-hosting, zero-trust networking, and AI workloads.',
 };

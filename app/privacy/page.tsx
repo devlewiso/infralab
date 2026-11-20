@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/privacy' },
   title: 'Privacy Policy',
   description: 'Privacy Policy for INFRA.LAB - neuralcodelab homelab infrastructure documentation.',
 };

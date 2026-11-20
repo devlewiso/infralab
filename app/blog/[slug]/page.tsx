@@ -11,6 +11,7 @@ interface Post {
   title: string;
   description: string;
   date: string;
+  updated: string;
   tags: string[];
   readTime: string;
   content: string;
@@ -20,6 +21,7 @@ interface Frontmatter {
   title: string;
   description: string;
   date: string;
+  updated: string;
   tags: string[];
   readTime: string;
 }
@@ -37,6 +39,7 @@ function parseFrontmatter(content: string): { frontmatter: Frontmatter; body: st
     title: '',
     description: '',
     date: '',
+    updated: '',
     tags: [],
     readTime: '',
   };
@@ -48,6 +51,7 @@ function parseFrontmatter(content: string): { frontmatter: Frontmatter; body: st
     if (key === 'title') frontmatter.title = value;
     else if (key === 'description') frontmatter.description = value;
     else if (key === 'date') frontmatter.date = value;
+    else if (key === 'updated') frontmatter.updated = value;
     else if (key === 'readTime') frontmatter.readTime = value;
     else if (key === 'tags') {
       const tagsStr = value.replace(/[\[\]]/g, '');
@@ -69,7 +73,9 @@ async function getPost(slug: string): Promise<Post | null> {
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const { frontmatter, body } = parseFrontmatter(fileContent);
     
-    const processedContent = await remark().use(html).process(body);
+    // El título ya va en el <h1> de la página: quitar el H1 del markdown para no tener dos.
+    const bodyWithoutH1 = body.replace(/^\s*# .*\n/, '');
+    const processedContent = await remark().use(html).process(bodyWithoutH1);
     const contentHtml = processedContent.toString();
     
     return {
@@ -77,6 +83,7 @@ async function getPost(slug: string): Promise<Post | null> {
       title: frontmatter.title,
       description: frontmatter.description,
       date: frontmatter.date,
+      updated: frontmatter.updated || frontmatter.date,
       tags: frontmatter.tags,
       readTime: frontmatter.readTime,
       content: contentHtml,
@@ -118,11 +125,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: post.title,
     description: post.description,
+    alternates: { canonical: `/blog/${slug}` },
     openGraph: {
       title: post.title,
       description: post.description,
       type: 'article',
+      url: `/blog/${slug}`,
       publishedTime: post.date,
+      modifiedTime: post.updated,
       authors: ['neuralcodelab'],
     },
   };
@@ -150,6 +160,24 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
         </div>
       </header>
       
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: post.title,
+            description: post.description,
+            datePublished: post.date,
+            dateModified: post.updated,
+            author: { '@type': 'Organization', name: 'neuralcodelab', url: 'https://neuralcodelab.com' },
+            publisher: { '@type': 'Organization', name: 'INFRA.LAB', url: 'https://infra.neuralcodelab.com' },
+            mainEntityOfPage: `https://infra.neuralcodelab.com/blog/${post.slug}`,
+            keywords: post.tags.join(', '),
+          }),
+        }}
+      />
+
       {/* Content */}
       <article className="max-w-[800px] mx-auto px-6 py-16">
         {/* Post Header */}

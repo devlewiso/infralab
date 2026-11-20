@@ -24,6 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+    metadataBase: new URL("https://infra.neuralcodelab.com"),
     title: {
         default: "INFRA.LAB // Production-Grade Homelab Infrastructure",
         template: "%s | INFRA.LAB",
@@ -82,7 +83,7 @@ export const metadata: Metadata = {
         creator: "@neuralcodelab",
     },
     alternates: {
-        canonical: "https://infra.neuralcodelab.com",
+        canonical: "/",
     },
 };
 

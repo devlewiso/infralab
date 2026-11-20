@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/terms' },
   title: 'Terms of Service',
   description: 'Terms of Service for INFRA.LAB - neuralcodelab homelab infrastructure documentation.',
 };
